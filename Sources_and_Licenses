@@ -1,0 +1,17 @@
+## 06_Sources_and_Licenses
+
+### 1. Code & Libraries
+React & Vite: Licensed under the MIT License. Used as the core frontend rendering library and development server environment.
+Custom Application Logic: Original JavaScript implementations for the recurrent state updates ($S_t$) and BDH fast-weight matrix updates ($W_t$) are open-source and released under the MIT License[cite: 1].
+
+### 2. Research & Primary Sources
+Dragon Hatchling (BDH) & BDH-CQ:
+Pathway Research Team, *Dragon Hatchling: Brain-Inspired Post-Transformer Architecture*, 2025/2026[cite: 1].
+Primary documentation, equations, and fast-weight Hebbian association mechanics sourced directly from Pathway's official technical reports and publications[cite: 1].
+
+### 3. Visual Assets, Fonts & UI
+Styling & Icons: Plain CSS / Tailwind CSS components and standard Unicode web symbols, open for public educational and non-commercial reuse.
+Typography: Default browser system fonts (`sans-serif`, `system-ui`), eliminating third-party font license restrictions.
+
+### 4. License
+This educational project and interactive artifact are released under the **MIT License**. You are free to copy, modify, and distribute this software for educational and research purposes.
