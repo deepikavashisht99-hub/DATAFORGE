@@ -1,0 +1,34 @@
+
+
+  AI + Code / Data / Asset Disclosure
+
+1. AI Assistance Disclosure
+
+AI Tools Used: ChatGPT / Claude (for initial code block conceptualization) and Replit Agent (for automated React/Vite web application generation, UI styling, and environment setup).
+
+
+Role of AI: Assisted in generating the initial HTML/CSS/JS code structure, setting up the React component tree, implementing the recurrent state update formulas, and building the interactive visual UI layout.
+
+
+Human Ownership & Verification: All logic, mathematical equations, and project parameters were reviewed, verified, and tested to ensure they accurately represent recurrent memory interference.
+
+
+
+2. Code & Libraries
+
+Frontend Framework: React + Vite (Vanilla JavaScript / Web Artifacts) generated via Replit.
+Custom Logic: All recurrent state calculations ($S_t = (1 - \gamma)S_{t-1} + x_t$) and BDH fast-weight synaptic memory updates ($W_t = \lambda W_{t-1} + x_t y_t^T$) were implemented cleanly in standard client-side JavaScript without external black-box machine learning libraries.
+
+
+
+3. Datasets & Models
+
+Dataset: None (Self-contained synthetic stream generator simulating abstract token streams).
+Pretrained Models: None. The application operates as an interactive mathematical substrate simulating real-time recurrent activations and Hebbian fast-weight updates directly inside the browser.
+
+
+
+4. Graphics, Assets & Fonts
+
+UI Components & Graphics: Procedurally rendered HTML Canvas / CSS elements for visual heatmaps, interactive sliders, and color-coded stream indicators.
+Fonts & Icons: System fallback web fonts and standard Unicode characters.
