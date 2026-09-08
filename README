@@ -1,0 +1,170 @@
+# Memory Lab — Recurrent Memory Interference (RMI)
+
+**Live simulation:** https://data-forge--memorylab.replit.app/
+**Project:** IIT Kharagpur — sequence cognition / RMI, v2.4
+
+Memory Lab is an interactive simulation that shows, in real time, how a
+recurrent model's fixed-size memory starts to break down once the amount of
+information passing through it exceeds what it can hold. It's built around a
+fast-weight ("BDH"-style) synaptic memory update, and it's meant to be
+explored, not just read about.
+
+This README covers what the project is, how to use the live simulation, what
+each control and panel means, and how to run or extend it if you have your
+own copy of the source.
+
+---
+
+## 1. What this project is
+
+Recurrent models compress everything they need to remember into a
+fixed-size internal state and keep updating that same state at every step.
+When a sequence is short enough, every piece of information fits cleanly.
+Once the sequence gets long enough, new information has to be written into
+space that's already occupied by something else — and the two start to
+blur together. That's **recurrent memory interference (RMI)**.
+
+Memory Lab makes this visible by simulating the write rule directly:
+
+```
+W(t) = λ · W(t-1) + x(t) · y(t)ᵀ
+```
+
+- **W** — the memory (a weight matrix)
+- **x(t), y(t)** — the key/value pair for the current token
+- **λ (lambda)** — the decay rate; how fast old associations fade
+
+Every step reinforces one new association while decaying everything
+already stored. The simulation lets you control the variables that decide
+how much interference this causes, and shows you the consequences live.
+
+---
+
+## 2. Quick start — using the live simulation
+
+1. Open **https://data-forge--memorylab.replit.app/** in a browser. No
+   login or install required.
+2. Set the three sliders under **01 / parameters**:
+   - **Memory capacity** — how many slots of distinct memory are available
+     (0–16).
+   - **Sequence length** — how many tokens will pass through the model
+     (0–32).
+   - **Forgetting rate** — how quickly old traces decay, i.e. λ (0–80%).
+3. Press **run simulation** to execute the whole sequence at once, or use
+   **step forward →** to advance one token at a time, or **auto-play ▶** to
+   watch it run continuously.
+4. Watch the **LIVE READOUT** interference score (top of the page) as it
+   updates each step.
+5. To reproduce the core effect: set **memory capacity below sequence
+   length**, then step forward. Watch tokens start "borrowing" signal from
+   their neighbors in the synaptic write panel, and watch the output-check
+   panel start to diverge from the ground truth.
+
+---
+
+## 3. Reading the panels
+
+| Panel | What it shows |
+|---|---|
+| **01 / parameters** | The three controls (capacity, sequence length, forgetting rate) plus the run / step / auto-play buttons. |
+| **02 / incoming signal** | The token-by-token sequence stream. Each token is marked as an active token, a stored trace, or at interference risk. |
+| **03 / recurrent state** | A live heatmap of activation intensity across memory slots (weak → strong). |
+| **04 / synaptic write** | The fast-weight update itself — shows which connections are being reinforced, competing, or overlapping, along with the current λ decay, active write step, and trace depth. |
+| **05 / output check** | Ground-truth target sequence vs. what the model actually predicts, so interference-driven errors are visible immediately. |
+
+---
+
+## 4. Parameter reference
+
+| Parameter | Range | What raising it does |
+|---|---|---|
+| Memory capacity | 0–16 slots | More slots = less crowding = lower interference for a given sequence length. |
+| Sequence length | 0–32 tokens | Longer sequences put more pressure on a fixed-size memory. |
+| Forgetting rate (λ decay) | 0%–80% | Higher = old traces clear faster (less crowding, but earlier tokens are forgotten sooner). Lower = better short-term recall, but more overlap once capacity is exceeded. |
+
+There is no single setting that removes interference once sequence length
+exceeds capacity — the three parameters trade off against each other
+rather than acting independently.
+
+---
+
+## 5. Suggested experiments
+
+- **Baseline:** capacity ≥ sequence length. Confirm the interference score
+  stays near zero and the output matches the target.
+- **Threshold crossing:** hold sequence length fixed, drag capacity down
+  one slot at a time, and note where the interference score starts
+  climbing.
+- **Forgetting-rate sweep:** hold capacity and sequence length fixed,
+  sweep λ from low to high, and compare which tokens get lost vs. which
+  get corrupted at each setting.
+- **Auto-play observation:** let a run with capacity below sequence length
+  play automatically and watch the output-check panel to see which token
+  positions fail first (typically the oldest, most-overwritten ones).
+
+---
+
+## 6. Running your own copy
+
+This project is deployed on **Replit**. If you have access to the project
+source (forked or cloned from Replit), the general steps are:
+
+1. **Fork or open the Repl** from the Replit project page, or clone the
+   repository if it's mirrored on Git:
+   ```bash
+   git clone <repository-url>
+   cd <project-folder>
+   ```
+2. **Install dependencies.** Check the project's `package.json` (Node/JS
+   projects) or `requirements.txt` (Python projects) to confirm the exact
+   stack, then run the matching install command:
+   ```bash
+   npm install        # if it's a Node/JS project
+   # or
+   pip install -r requirements.txt   # if it's a Python project
+   ```
+3. **Run it locally:**
+   ```bash
+   npm run dev         # common for Node/JS front-end projects
+   # or
+   python app.py       # common for Python-served projects
+   ```
+4. **Open the local URL** shown in the terminal (typically
+   `http://localhost:3000` or similar).
+5. On Replit itself, you can also just click **Run** in the workspace —
+   Replit auto-detects the run command from the project configuration.
+
+> **Note:** the exact install/run commands depend on the project's actual
+> tech stack, which isn't visible from the deployed simulation alone. If
+> your copy of the source uses a different setup, replace the commands
+> above with whatever your `package.json` scripts or project config
+> specify.
+
+---
+
+## 7. Project structure (conceptual)
+
+Since the simulation is single-page and state-driven, the logical pieces
+are:
+
+```
+/ (Memory Lab)
+├── parameters        # capacity, sequence length, forgetting-rate state
+├── sequence-stream    # token generation + step/auto-play logic
+├── memory-state       # the W(t) update (decay + outer-product write)
+├── interference-score # derived metric from overlapping activations
+└── output-check        # ground-truth vs. predicted comparison
+```
+
+If you're extending the project, the core logic to look for is the
+`W(t) = λ·W(t-1) + x(t)y(t)ᵀ` update — everything else (heatmap, scores,
+panels) is a view built on top of that single state update.
+
+---
+
+## 8. Credits
+
+Built as part of an IIT Kharagpur project on sequence cognition and
+recurrent memory interference (RMI), simulation version 2.4. Concept
+grounded in fast-weight / linear-attention memory models (Dragon
+Hatchling–style synaptic update).
