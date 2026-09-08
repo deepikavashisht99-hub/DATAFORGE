@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a1222" />
+    <meta
+      name="description"
+      content="An interactive simulation of recurrent memory interference in sequence models."
+    />
+    <title>Memory Lab — Recurrent Memory Interference</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23162640'/%3E%3Cpath d='M8 23V15h4v8H8Zm6 0V9h4v14h-4Zm6 0V12h4v11h-4Z' fill='%2351e1da'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="app-shell" id="app">
+      <header class="topbar">
+        <a class="brand" href="#top" aria-label="Memory Lab home">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+          <span>
+            <strong>MEMORY LAB</strong>
+            <small>sequence cognition / 01</small>
+          </span>
+        </a>
+
+        <div class="topbar-meta">
+          <span class="live-indicator"><i></i> simulation online</span>
+          <span class="topbar-divider"></span>
+          <span class="model-tag">RMI / v2.4</span>
+        </div>
+      </header>
+
+      <main id="top">
+        <section class="intro" aria-labelledby="page-title">
+          <div class="intro-copy">
+            <p class="eyebrow"><span class="eyebrow-line"></span> recurrent memory interference</p>
+            <h1 id="page-title">When the past<br /><em>stays too loud.</em></h1>
+            <p class="intro-description">
+              Explore how a recurrent model stores, refreshes, and confuses sequential information
+              as its memory fills up.
+            </p>
+          </div>
+          <div class="intro-readout" aria-label="Current simulation summary">
+            <div class="readout-label">LIVE READOUT</div>
+            <div class="readout-number" id="scoreReadout">0.00</div>
+            <div class="readout-caption">interference score</div>
+            <div class="readout-bar"><span id="scoreBar"></span></div>
+          </div>
+        </section>
+
+        <section class="simulator-layout" aria-label="Memory interference simulator">
+          <aside class="controls-panel panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-index">01 / parameters</p>
+                <h2>Simulation controls</h2>
+              </div>
+              <span class="panel-icon" aria-hidden="true">⌁</span>
+            </div>
+
+            <div class="control-list">
+              <label class="control">
+                <span class="control-topline">
+                  <span class="control-name">Memory capacity</span>
+                  <output id="capacityValue" for="capacitySlider">8 slots</output>
+                </span>
+                <span class="control-help">How many activations can remain distinct.</span>
+                <input id="capacitySlider" type="range" min="4" max="16" value="8" step="1" />
+                <span class="range-labels"><span>4</span><span>16</span></span>
+              </label>
+
+              <label class="control">
+                <span class="control-topline">
+                  <span class="control-name">Sequence length</span>
+                  <output id="sequenceValue" for="sequenceSlider">18 tokens</output>
+                </span>
+                <span class="control-help">The number of symbols passing through the model.</span>
+                <input id="sequenceSlider" type="range" min="8" max="32" value="18" step="1" />
+                <span class="range-labels"><span>8</span><span>32</span></span>
+              </label>
+
+              <label class="control">
+                <span class="control-topline">
+                  <span class="control-name">Forgetting rate</span>
+                  <output id="forgettingValue" for="forgettingSlider">34%</output>
+                </span>
+                <span class="control-help">How quickly older traces lose their signal.</span>
+                <input id="forgettingSlider" type="range" min="0" max="80" value="34" step="1" />
+                <span class="range-labels"><span>0%</span><span>80%</span></span>
+              </label>
+            </div>
+
+            <div class="control-actions">
+              <button class="button button-primary" id="simulateButton" type="button">
+                <span class="button-pulse"></span> run simulation
+              </button>
+              <button class="button button-secondary" id="stepButton" type="button">
+                step forward <span aria-hidden="true">→</span>
+              </button>
+              <button class="button button-ghost" id="autoButton" type="button" aria-pressed="false">
+                auto-play <span class="play-glyph" aria-hidden="true">▶</span>
+              </button>
+            </div>
+
+            <div class="control-note">
+              <span class="note-symbol" aria-hidden="true">i</span>
+              <p>Try lowering capacity below sequence length. The model will begin borrowing signal from nearby tokens.</p>
+            </div>
+          </aside>
+
+          <div class="visual-column">
+            <section class="stream-panel panel" aria-labelledby="stream-title">
+              <div class="panel-heading panel-heading-inline">
+                <div>
+                  <p class="panel-index">02 / incoming signal</p>
+                  <h2 id="stream-title">Sequence stream</h2>
+                </div>
+                <div class="step-readout"><span>STEP</span> <strong id="stepValue">01</strong><span class="step-total">/ <b id="stepTotal">18</b></span></div>
+              </div>
+              <div class="stream-track-wrap">
+                <div class="stream-axis"><span>t − sequence</span><span>t + sequence</span></div>
+                <div class="stream-track" id="streamBlocks" role="list" aria-label="Colored sequence tokens"></div>
+              </div>
+              <div class="stream-legend">
+                <span><i class="legend-dot legend-current"></i> active token</span>
+                <span><i class="legend-dot legend-stored"></i> stored trace</span>
+                <span><i class="legend-dot legend-ghost"></i> interference risk</span>
+              </div>
+            </section>
+
+            <div class="memory-panels">
+              <section class="memory-panel panel" aria-labelledby="memory-title">
+                <div class="panel-heading panel-heading-inline">
+                  <div>
+                    <p class="panel-index">03 / recurrent state</p>
+                    <h2 id="memory-title">Active memory state</h2>
+                  </div>
+                  <div class="memory-status"><i></i><span id="memoryStatus">stable recall</span></div>
+                </div>
+                <div class="memory-grid-shell">
+                  <div class="memory-y-axis" id="memoryAxis" aria-hidden="true"></div>
+                  <div class="memory-grid" id="memoryGrid" role="img" aria-label="Activation grid showing current recurrent memory state"></div>
+                </div>
+                <div class="memory-footer">
+                  <span>activation intensity</span>
+                  <span class="activation-scale"><i></i><i></i><i></i><i></i><i></i></span>
+                  <span>weak <b>→</b> strong</span>
+                </div>
+              </section>
+
+              <section class="bdh-panel panel" aria-labelledby="bdh-title">
+                <div class="panel-heading panel-heading-inline">
+                  <div>
+                    <p class="panel-index">04 / synaptic write</p>
+                    <h2 id="bdh-title">BDH Fast-Weight Synaptic Memory</h2>
+                  </div>
+                  <div class="bdh-status"><i></i><span id="bdhStatus">writing / stable</span></div>
+                </div>
+                <div class="bdh-equation" aria-label="W t equals lambda W t minus 1 plus x t y t transpose">
+                  <span>W<sub>t</sub></span>
+                  <b>=</b>
+                  <span class="equation-decay">λ W<sub>t−1</sub></span>
+                  <b>+</b>
+                  <span class="equation-write">x<sub>t</sub> y<sub>t</sub><sup>T</sup></span>
+                </div>
+                <p class="bdh-description">
+                  Pathway&apos;s Dragon Hatchling writes the current key/value association into fast
+                  synapses. Older connections decay by <strong>λ</strong> before the next outer-product write.
+                </p>
+                <div class="bdh-meta">
+                  <div><span>λ decay</span><strong id="bdhLambdaValue">0.66</strong></div>
+                  <div><span>active write</span><strong id="bdhInputToken">T01</strong></div>
+                  <div><span>trace depth</span><strong id="bdhTraceDepth">00</strong></div>
+                </div>
+                <div class="bdh-matrix-shell">
+                  <div></div>
+                  <div class="bdh-x-axis" id="bdhXAxis" aria-hidden="true"></div>
+                  <div class="bdh-y-axis" id="bdhYAxis" aria-hidden="true"></div>
+                  <div class="bdh-matrix" id="bdhMatrix" role="img" aria-label="BDH fast-weight matrix showing synaptic connection strengths"></div>
+                </div>
+                <div class="bdh-footer">
+                  <span>synaptic connection strength</span>
+                  <span class="bdh-legend">
+                    <span><i class="bdh-swatch positive"></i> reinforced</span>
+                    <span><i class="bdh-swatch negative"></i> competing</span>
+                    <span><i class="bdh-swatch collision"></i> overlap</span>
+                  </span>
+                </div>
+              </section>
+            </div>
+
+            <section class="comparison-panel panel" aria-labelledby="comparison-title">
+              <div class="panel-heading panel-heading-inline">
+                <div>
+                  <p class="panel-index">05 / output check</p>
+                  <h2 id="comparison-title">Expected vs model output</h2>
+                </div>
+                <span class="comparison-step">token prediction</span>
+              </div>
+              <div class="output-comparison">
+                <div class="output-card expected-card">
+                  <span class="output-label">expected output</span>
+                  <div class="output-token" id="expectedOutput"></div>
+                  <span class="output-detail" id="expectedDetail">ground-truth sequence target</span>
+                </div>
+                <div class="comparison-arrow" aria-hidden="true">→</div>
+                <div class="output-card model-card">
+                  <span class="output-label">model output</span>
+                  <div class="output-token" id="modelOutput"></div>
+                  <span class="output-detail" id="modelDetail">recurrent state prediction</span>
+                </div>
+              </div>
+              <div class="comparison-result" id="comparisonResult" aria-live="polite"></div>
+              <div class="interference-alert" id="interferenceAlert" role="status" aria-live="polite" hidden>
+                <span class="alert-mark">!</span>
+                <div>
+                  <strong>memory interference detected</strong>
+                  <p id="interferenceMessage">Stored traces are colliding.</p>
+                </div>
+                <span class="alert-pulse"></span>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="explanation-strip" aria-label="Simulation explanation">
+          <div class="explanation-number">RMI</div>
+          <div>
+            <h2>Synaptic traces make working memory visible.</h2>
+            <p>
+              BDH fast weights expose the same pressure from another angle: every new association
+              reinforces a connection while λ quietly erases what came before.
+            </p>
+          </div>
+          <div class="explanation-metric">
+            <span>capacity pressure</span>
+            <strong id="pressureMetric">moderate</strong>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span>MEMORY LAB <b>/</b> interactive model behavior</span>
+        <span>drag a parameter to begin</span>
+      </footer>
+    </div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
